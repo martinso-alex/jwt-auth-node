@@ -5,7 +5,7 @@ const passport = require('passport')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 
-const blocklist = require('../../redis/manipula-blocklist')
+const blocklist = require('../../redis/blocklist-access-token')
 
 const Usuario = require('./usuarios-modelo')
 const { InvalidArgumentError } = require('../erros')

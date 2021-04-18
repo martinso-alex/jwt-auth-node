@@ -1,19 +1,26 @@
 const { InvalidArgumentError, InternalServerError } = require('../erros')
 const Usuario = require('./usuarios-modelo')
+
 const jwt = require('jsonwebtoken')
-const blocklist = require('../../redis/manipula-blocklist')
 const crypto = require('crypto')
 const moment = require('moment')
+
+const blocklist = require('../../redis/blocklist-access-token')
+const allowlist = require('../../redis/allowlist-refresh-token')
 
 function criaTokenJWT (usuario) {
   const payload = {id: usuario.id}
 
-  return jwt.sign(payload, process.env.CHAVE_JWT, {expiresIn: '15m'})
+  return jwt.sign(payload, process.env.CHAVE_JWT, {expiresIn: '20s'})
 }
 
-function criaTokenOpaco (usuario) {
+async function criaTokenOpaco (usuario) {
   const dataExpiracao = moment().add(5, 'd').unix()
-  return crypto.randomBytes(24).toString('hex')
+  const token = crypto.randomBytes(24).toString('hex')
+
+  await allowlist.adiciona(token, usuario.id, dataExpiracao)
+
+  return token
 }
 
 module.exports = {
@@ -57,10 +64,10 @@ module.exports = {
     }
   },
 
-  login: (req, res) => {
+  login: async (req, res) => {
     try {
       const accessToken = criaTokenJWT(req.user)
-      const refreshToken = criaTokenOpaco(req.user)
+      const refreshToken = await criaTokenOpaco(req.user)
   
       res.set('Authorization', accessToken)
       res.json({refreshToken})

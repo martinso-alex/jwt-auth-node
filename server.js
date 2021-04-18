@@ -4,7 +4,8 @@ const app = require('./app');
 const port = 3000;
 const db = require('./database');
 
-require('./redis/blocklist')
+require('./redis/blocklist-access-token')
+require('./redis/allowlist-refresh-token')
 
 const routes = require('./rotas');
 routes(app);

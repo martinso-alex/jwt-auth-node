@@ -8,7 +8,11 @@ module.exports = app => {
 
   app
     .route('/usuario/logout')
-    .get(auth.bearer, usuariosControlador.logout)
+    .post([auth.refresh, auth.bearer], usuariosControlador.logout)
+
+  app
+    .route('/usuario/refresh')
+    .post(auth.refresh, usuariosControlador.login)
 
   app
     .route('/usuario')
