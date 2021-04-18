@@ -5,7 +5,7 @@ const passport = require('passport')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 
-const blacklist = require('../../redis/manipula-blacklist')
+const blocklist = require('../../redis/manipula-blocklist')
 
 const Usuario = require('./usuarios-modelo')
 const { InvalidArgumentError } = require('../erros')
@@ -19,10 +19,10 @@ async function verificaSenha (senha, senhaHash) {
   if (!senhaValida) throw new InvalidArgumentError('email ou senha invalidos')
 }
 
-async function verificaTokenBlacklist (token) {
-  const tokenNaBlacklist = await blacklist.contemToken(token)
+async function verificaTokenBlocklist (token) {
+  const tokenNaBlocklist = await blocklist.contemToken(token)
 
-  if (tokenNaBlacklist)
+  if (tokenNaBlocklist)
     throw new jwt.JsonWebTokenError('token invalido por logout')
 }
 
@@ -47,7 +47,7 @@ passport.use(
 passport.use(
   new BearerStrategy(async (token, done) => {
     try {
-      await verificaTokenBlacklist(token)
+      await verificaTokenBlocklist(token)
 
       const payload = jwt.verify(token, process.env.CHAVE_JWT)
       const usuario = await Usuario.buscaPorId(payload.id)
