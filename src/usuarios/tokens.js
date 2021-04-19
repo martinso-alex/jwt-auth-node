@@ -25,6 +25,8 @@ async function verificaTokenJWT (token, nome, blocklist) {
 }
 
 async function verificaTokenBlocklist (token, nome, blocklist) {
+  if (!blocklist) return
+
   const tokenNaBlocklist = await blocklist.contemToken(token)
 
   if (tokenNaBlocklist)
@@ -96,6 +98,17 @@ module.exports = {
     },
     invalida (token) {
       return invalidaTokenOpaco (token, this.lista)
+    }
+  },
+
+  verification: {
+    expiracao: [1, 'h'],
+    nome: 'verification token',
+    cria (id) {
+      return criaTokenJWT(id, this.expiracao)
+    },
+    verifica (token) {
+      return verificaTokenJWT(token, this.nome)
     }
   }
 }

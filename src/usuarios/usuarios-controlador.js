@@ -1,6 +1,12 @@
 const { InvalidArgumentError, InternalServerError } = require('../erros')
 const Usuario = require('./usuarios-modelo')
 const tokens = require('./tokens')
+const { EmailVerificacao } = require('./emails')
+
+function geraEndereco(rota, token) {
+  const baseURL = process.env.BASE_URL
+  return `${baseURL}${rota}${token}`
+}
 
 module.exports = {
   adiciona: async (req, res) => {
@@ -9,12 +15,17 @@ module.exports = {
     try {
       const usuario = new Usuario({
         nome,
-        email
+        email,
+        emailVerificado: false
       });
 
       await usuario.adicionaSenha(senha)
-
       await usuario.adiciona()
+
+      const token = tokens.verification.cria(usuario.id)
+      const endereco = geraEndereco('/usuario/verifica-email/', token)
+      const emailVerificacao = new EmailVerificacao(usuario, endereco)
+      emailVerificacao.enviaEmail().catch(console.log)
 
       res.status(201).json()
     } catch (erro) {
@@ -31,6 +42,17 @@ module.exports = {
   lista: async (req, res) => {
     const usuarios = await Usuario.lista()
     res.json(usuarios)
+  },
+
+  verificaEmail: async (req, res) => {
+    try {
+      const usuario = req.user
+      await usuario.verificaEmail()
+
+      res.json()
+    } catch (error) {
+      res.status(500).json({ erro: erro.message })
+    }
   },
 
   deleta: async (req, res) => {

@@ -9,10 +9,11 @@ module.exports = {
           INSERT INTO usuarios (
             nome,
             email,
-            senhaHash
-          ) VALUES (?, ?, ?)
+            senhaHash,
+            emailVerificado
+          ) VALUES (?, ?, ?, ?)
         `,
-        [usuario.nome, usuario.email, usuario.senhaHash],
+        [usuario.nome, usuario.email, usuario.senhaHash, usuario.emailVerificado],
         erro => {
           if (erro) {
             reject(new InternalServerError('Erro ao adicionar o usuário!'));
@@ -75,6 +76,21 @@ module.exports = {
             return reject('Erro ao listar usuários');
           }
           return resolve(usuarios);
+        }
+      );
+    });
+  },
+
+  modificaEmailVerificado: (usuario, emailVerificado) => {
+    return new Promise((resolve, reject) => {
+      db.run(
+        `UPDATE usuarios SET emailVerificado = ? WHERE id = ?`,
+        [emailVerificado, usuario.id],
+        erro => {
+          if (erro) {
+            return reject('Erro ao modificar emailVerificado');
+          }
+          return resolve();
         }
       );
     });

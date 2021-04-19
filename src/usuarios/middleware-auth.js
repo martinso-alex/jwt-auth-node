@@ -65,5 +65,26 @@ module.exports = {
 
       return res.status(500).json({error: error.message})
     }
+  },
+
+  verificaEmail: async (req, res, next) => {
+    try {
+      const { token } = req.params
+      const id = await tokens.verification.verifica(token)
+      const usuario = await Usuario.buscaPorId(id)
+      req.user = usuario
+      next()
+    } catch (error) {
+      if (error && error.name === 'JsonWebTokenError')
+          return res.status(401).json({error: error.message})
+
+      if (error && error.name === 'TokenExpiredError')
+        return res.status(401).json({
+          error: error.message,
+          expiredAt: error.expiredAt
+        })
+
+      return res.status(500).json({error: error.message})
+    }
   }
 }

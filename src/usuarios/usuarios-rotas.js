@@ -20,6 +20,10 @@ module.exports = app => {
     .get(usuariosControlador.lista)
 
   app
+    .route('/usuario/verifica-email/:token')
+    .get(auth.verificaEmail, usuariosControlador.verificaEmail)
+
+  app
     .route('/usuario/:id')
     .delete(auth.bearer, usuariosControlador.deleta)
 }
